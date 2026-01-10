@@ -1,0 +1,23 @@
+version: '3'
+services:
+  thesis_env:
+    build: .
+    image: thesis_fastlio:latest
+    container_name: thesis_container
+    # Network host is required for ROS 2 communication between containers/host
+    network_mode: host
+    # Privileged is required to access hardware (USB LiDARs)
+    privileged: true
+    # This keeps the container running so you can log in
+    stdin_open: true
+    tty: true
+    # This maps your local folders to the container
+    volumes:
+      - ./src:/root/ros2_ws/src
+      - ./build:/root/ros2_ws/build
+      - ./install:/root/ros2_ws/install
+      - ./log:/root/ros2_ws/log
+      - /dev:/dev
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
