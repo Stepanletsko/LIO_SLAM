@@ -513,7 +513,6 @@ void publish_frame_world(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::Share
     /**************** save map ****************/
     /* 1. make sure you have enough memories
     /* 2. noted that pcd save will influence the real-time performences **/
-    /*
     if (pcd_save_en)
     {
         int size = feats_undistort->points.size();
@@ -540,7 +539,6 @@ void publish_frame_world(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::Share
             scan_wait_num = 0;
         }
     }
-    */
 }
 
 void publish_frame_body(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudFull_body)
@@ -609,7 +607,8 @@ void publish_map(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub
 void save_to_pcd()
 {
     pcl::PCDWriter pcd_writer;
-    pcd_writer.writeBinary(map_file_path, *pcl_wait_pub);
+    std::cout << "Saving " << pcl_wait_save->points.size() << " points to " << map_file_path << std::endl;
+    pcd_writer.writeBinary(map_file_path, *pcl_wait_save);
 }
 
 template<typename T>
