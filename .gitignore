@@ -1,6 +1,7 @@
+bags/*.bag
+bags/**/*.db3
+bags/**/*.mcap
+bags/*_ros2/
 build/
 install/
 log/
-*.bag
-*.pcd
-.vscode/

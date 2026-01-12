@@ -1,23 +1,51 @@
+# Author: Stepan Letsko
+# Date: January 12, 2026
+# Purpose: This file defines the Docker service configuration for the Thesis project.
+#          It orchestrates the container creation, mapping hardware, networks, and storage volumes
+#          so the ROS 2 environment runs seamlessly on the host machine.
+
+# Specifies the version of the Docker Compose file format
 version: '3'
+
+# Define the services (containers) that make up the application
 services:
+  # Name of our specific service for the thesis environment
   thesis_env:
+    # Build the image from the Dockerfile in the current directory (.)
     build: .
+    # Name tag to assign to the built image for easy reference
     image: thesis_fastlio:latest
+    # Custom name for the container instance (makes it easier to find with 'docker ps')
     container_name: thesis_container
-    # Network host is required for ROS 2 communication between containers/host
+    # Use the host's network stack directly.
+    # This is crucial for ROS 2 because it allows the container to share IP and ports
+    # with the laptop/Pi, enabling communication with external hardware or other ROS nodes.
     network_mode: host
-    # Privileged is required to access hardware (USB LiDARs)
+    # Run in privileged mode to give the container full access to the host's devices.
+    # This is required to access USB devices like the Livox LiDAR.
     privileged: true
-    # This keeps the container running so you can log in
+    # Keep standard input open (interactive mode), allowing you to attach to the container.
     stdin_open: true
+    # Allocate a pseudo-TTY (terminal), necessary for running interactive shell commands.
     tty: true
-    # This maps your local folders to the container
+    # Mount volumes to share files between the host (laptop) and the container.
+    # Format is: host_path:container_path
     volumes:
+      # Map the source code folder so you can edit code on your laptop and see it in Docker.
       - ./src:/root/ros2_ws/src
+      # Map build artifacts so they persist outside the container (optional, but good for caching).
       - ./build:/root/ros2_ws/build
+      # Map install artifacts so sourced setup files persist.
       - ./install:/root/ros2_ws/install
+      # Map logs to debug issues from the host.
       - ./log:/root/ros2_ws/log
+      # Map a folder for ROS bags so you can play data recorded elsewhere.
+      - ./bags:/root/ros2_ws/bags
+      # Map the entire /dev directory to allow access to hardware devices (USB, Serial, etc.).
       - /dev:/dev
+    # Set environment variables inside the container.
     environment:
+      # Pass the host's DISPLAY variable to allow GUI applications (like Rviz) to show on the screen.
       - DISPLAY=${DISPLAY}
+      # Fix for some Qt/GUI rendering issues in Docker containers.
       - QT_X11_NO_MITSHM=1
