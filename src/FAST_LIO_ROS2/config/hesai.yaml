@@ -6,10 +6,10 @@
 /**:
     ros__parameters:
         feature_extract_enable: false    # false: Use all points (better for dense maps). true: Extract edge/surf features (faster, less dense).
-        point_filter_num: 2              # Downsampling ratio. 1 = use all points. 2 = use every 2nd point. Higher = faster but less detail.
+        point_filter_num: 1              # Downsampling ratio. 1 = use all points. 2 = use every 2nd point. Higher = faster but less detail.
         max_iteration: 3                 # Number of Kalman Filter iterations per scan. 3 is standard.
-        filter_size_surf: 0.2            # Voxel size for downsampling the current scan (meters). 0.2m keeps good detail.
-        filter_size_map: 0.2             # Voxel size for the global map (meters). Controls map density.
+        filter_size_surf: 0.5            # Voxel size for downsampling the current scan (meters). 0.2m keeps good detail.
+        filter_size_map: 0.5             # Voxel size for the global map (meters). Controls map density.
         cube_side_length: 1000.0         # Size of the local map box around the robot. 1000m is effectively infinite.
         runtime_pos_log_enable: false    # true: Save a CSV log of position/time stats.
         map_file_path: "/root/ros2_ws/bags/hesai_map.pcd" # Absolute path where the final map will be saved.
@@ -17,35 +17,36 @@
         common:
             # Hilti 2023 Bag Topics:
             lid_topic:  "/hesai/pandar"  # Topic name for LiDAR point cloud
-            imu_topic:  "/adis/imu"      # Topic name for IMU data
+            imu_topic:  "/alphasense/imu"      # Topic name for IMU data
             
             # For my Real Hardware (Uncomment later):
             # lid_topic:  "/hesai/pandar"
             # imu_topic:  "/sbg/imu/data"
 
             time_sync_en: false          # Only set to true if hardware time sync is missing (software sync).
-            time_offset_lidar_to_imu: 0.0 # Time offset in seconds. Leave 0.0 unless I calibrate it manually.
+            time_offset_lidar_to_imu: 0.00158 # Time offset in seconds. Leave 0.0 unless calibrate it manually.
 
         preprocess:
             lidar_type: 2                # 1: Livox (CustomMsg), 2: Standard ROS PointCloud2 (Hesai/Velodyne), 3: Ouster
             scan_line: 32                # Number of lasers. 32 for Hilti bag. Change to 16 for my XT-16.
             blind: 0.5                   # Blind spot radius in meters. Points closer than this are ignored (robot body).
             scan_rate: 10                # Frequency of LiDAR scans (Hz). Hesai is usually 10Hz.
-            timestamp_unit: 2            # Unit of the 'time' field in PointCloud2. 0: sec, 1: ms, 2: us, 3: ns.
+            timestamp_unit: 2           # Unit of the 'time' field in PointCloud2. 0: sec, 1: ms, 2: us, 3: ns.
 
         mapping:
-            acc_cov: 0.1                 # IMU accelerometer covariance (trust in IMU acceleration).
-            gyr_cov: 0.1                 # IMU gyroscope covariance (trust in IMU rotation).
-            b_acc_cov: 0.0001            # Accelerometer bias random walk.
-            b_gyr_cov: 0.0001            # Gyroscope bias random walk.
+            acc_cov: 0.0001688956                 # IMU accelerometer covariance (trust in IMU acceleration).
+            gyr_cov: 0.0010679343                 # IMU gyroscope covariance (trust in IMU rotation).
+            b_acc_cov: 0.0000009783            # Accelerometer bias random walk.
+            b_gyr_cov: 0.0000265416            # Gyroscope bias random walk.
             fov_degree:    360.0         # Field of View. Hesai is 360 degrees.
             det_range:     100.0         # Maximum range to use for mapping (meters).
-            extrinsic_est_en:  true      # true: Automatically calibrate the rotation/translation between LiDAR and IMU during run.
-            extrinsic_T: [ 0.0, 0.0, 0.0 ] # Initial guess for translation (x, y, z) from IMU to LiDAR.
-            extrinsic_R: [ 1., 0., 0.,   # Initial guess for rotation matrix (Identity matrix = no rotation).
-                           0., 1., 0.,
+            extrinsic_est_en:  false      # true: Automatically calibrate the rotation/translation between LiDAR and IMU during run.
+            extrinsic_T:  [-0.00673, -0.00689, 0.04989] # Initial guess for translation (x, y, z) from IMU to LiDAR.
+            extrinsic_R: [ 1., 0., 0., 
+                           0., 1., 0., 
                            0., 0., 1.]
 
+                          # Initial guess for rotation matrix (Identity matrix = no rotation).
         publish:
             path_en:  true               # Publish the robot's path (trajectory) to Rviz.
             map_en: false                # Publish the full global map to Rviz? (Keep false to save CPU/Network).
@@ -55,4 +56,4 @@
 
         pcd_save:
             pcd_save_en: true            # Enable saving the map to a PCD file at the end.
-            interval: -1                 # -1: Save all frames into one big file. N: Save every N frames.
+            interval: 10                 # -1: Save all frames into one big file. N: Save every N frames.

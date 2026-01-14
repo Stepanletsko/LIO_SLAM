@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
+add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 project(fast_lio)
 
 if(NOT CMAKE_BUILD_TYPE)
