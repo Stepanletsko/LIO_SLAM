@@ -49,7 +49,8 @@ WORKDIR /root/ros2_ws
 
 # Add the ROS 2 setup script to .bashrc so it is sourced automatically
 # whenever a new terminal is opened inside the container.
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
+    echo "if [ -f /root/ros2_ws/install/setup.bash ]; then source /root/ros2_ws/install/setup.bash; fi" >> ~/.bashrc
 
 # 4. Install Colcon (Build tool)
 # Update apt again (good practice before new install block) and install colcon
@@ -57,4 +58,13 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-pip \
-    && pip3 install rosbags
+    && pip3 install "rosbags" "numpy<2.0" lz4
+
+# 5. Setup Entrypoint
+# Copy the entrypoint script into the image
+COPY entrypoint.sh /entrypoint.sh
+# Make it executable
+RUN chmod +x /entrypoint.sh
+# Set the entrypoint to run our script on container startup
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]

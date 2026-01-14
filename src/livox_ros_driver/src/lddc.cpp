@@ -588,7 +588,7 @@ PublisherPtr Lddc::GetCurrentPublisher(uint8_t index) {
           "%s publish use PointCloud2 format, set ROS publisher queue size %d",
           name_str, queue_size);
     } else if (kLivoxCustomMsg == transfer_format_) {
-      **pub = cur_node_->GetNode().advertise<livox_ros_driver2::CustomMsg>(name_str,
+      **pub = cur_node_->GetNode().advertise<livox_ros_driver::CustomMsg>(name_str,
                                                                 queue_size);
       DRIVER_INFO(*cur_node_,
           "%s publish use livox custom format, set ROS publisher queue size %d",

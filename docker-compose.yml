@@ -4,9 +4,6 @@
 #          It orchestrates the container creation, mapping hardware, networks, and storage volumes
 #          so the ROS 2 environment runs seamlessly on the host machine.
 
-# Specifies the version of the Docker Compose file format
-version: '3'
-
 # Define the services (containers) that make up the application
 services:
   # Name of our specific service for the thesis environment
@@ -43,9 +40,13 @@ services:
       - ./bags:/root/ros2_ws/bags
       # Map the entire /dev directory to allow access to hardware devices (USB, Serial, etc.).
       - /dev:/dev
+      # Map the X11 socket for GUI applications (Rviz)
+      - /tmp/.X11-unix:/tmp/.X11-unix
     # Set environment variables inside the container.
     environment:
       # Pass the host's DISPLAY variable to allow GUI applications (like Rviz) to show on the screen.
       - DISPLAY=${DISPLAY}
       # Fix for some Qt/GUI rendering issues in Docker containers.
       - QT_X11_NO_MITSHM=1
+      # Allow passing the software rendering flag from the host
+      - LIBGL_ALWAYS_SOFTWARE=${LIBGL_ALWAYS_SOFTWARE}

@@ -28,7 +28,7 @@
 #include <csignal>
 #include <thread>
 
-#include "include/livox_ros_driver2.h"
+#include "include/livox_ros_driver.h"
 #include "include/ros_headers.h"
 #include "driver_node.h"
 #include "lddc.h"

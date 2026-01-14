@@ -41,7 +41,7 @@ Desktop-Full installation is recommend.
 ### 2.1 Clone Livox ROS Driver 2 source code:
 
 ```shell
-git clone https://github.com/Livox-SDK/livox_ros_driver2.git ws_livox/src/livox_ros_driver2
+git clone https://github.com/Livox-SDK/livox_ros_driver.git ws_livox/src/livox_ros_driver
 ```
 
   **Note :**
@@ -80,24 +80,24 @@ source /opt/ros/humble/setup.sh
 
 ```shell
 source ../../devel/setup.sh
-roslaunch livox_ros_driver2 [launch file]
+roslaunch livox_ros_driver [launch file]
 ```
 
 in which,  
 
-* **livox_ros_driver2** : is the ROS package name of Livox ROS Driver 2;
+* **livox_ros_driver** : is the ROS package name of Livox ROS Driver 2;
 * **[launch file]** : is the ROS launch file you want to use; the 'launch_ROS1' folder contains several launch samples for your reference;  
 
 An rviz launch example for HAP LiDAR would be:
 
 ```shell
-roslaunch livox_ros_driver2 rviz_HAP.launch
+roslaunch livox_ros_driver rviz_HAP.launch
 ```
 
 #### For ROS2:
 ```shell
 source ../../install/setup.sh
-ros2 launch livox_ros_driver2 [launch file]
+ros2 launch livox_ros_driver [launch file]
 ```
 
 in which,  
@@ -107,14 +107,14 @@ in which,
 A rviz launch example for HAP LiDAR would be:
 
 ```shell
-ros2 launch livox_ros_driver2 rviz_HAP_launch.py
+ros2 launch livox_ros_driver rviz_HAP_launch.py
 ```
 
-## 3. Launch file and livox_ros_driver2 internal parameter configuration instructions
+## 3. Launch file and livox_ros_driver internal parameter configuration instructions
 
 ### 3.1 Launch file configuration instructions
 
-Launch files of ROS are in the "ws_livox/src/livox_ros_driver2/launch_ROS1" directory and launch files of ROS2 are in the "ws_livox/src/livox_ros_driver2/launch_ROS2" directory. Different launch files have different configuration parameter values and are used in different scenarios:
+Launch files of ROS are in the "ws_livox/src/livox_ros_driver/launch_ROS1" directory and launch files of ROS2 are in the "ws_livox/src/livox_ros_driver/launch_ROS2" directory. Different launch files have different configuration parameter values and are used in different scenarios:
 
 | launch file name          | Description                                                  |
 | ------------------------- | ------------------------------------------------------------ |
@@ -444,18 +444,18 @@ For more infomation about the HAP config, please refer to:
     <param name="output_data_type" value="$(arg output_type)"/>
     <param name="cmdline_str" type="string" value="$(arg bd_list)"/>
     <param name="cmdline_file_path" type="string" value="$(arg lvx_file_path)"/>
-    <param name="user_config_path" type="string" value="$(find livox_ros_driver2)/config/MID360_config1.json"/> # Mid360 MID360_config1 name
+    <param name="user_config_path" type="string" value="$(find livox_ros_driver)/config/MID360_config1.json"/> # Mid360 MID360_config1 name
     <param name="frame_id" type="string" value="$(arg msg_frame_id)"/>
     <param name="enable_lidar_bag" type="bool" value="$(arg lidar_bag)"/>
     <param name="enable_imu_bag" type="bool" value="$(arg imu_bag)"/>
 
-    <node name="livox_lidar_publisher1" pkg="livox_ros_driver2"
-          type="livox_ros_driver2_node" required="true"
+    <node name="livox_lidar_publisher1" pkg="livox_ros_driver"
+          type="livox_ros_driver_node" required="true"
           output="screen" args="$(arg cmdline_arg)"/>
 
     <group if="$(arg rviz_enable)">
         <node name="livox_rviz" pkg="rviz" type="rviz" respawn="true"
-                args="-d $(find livox_ros_driver2)/config/display_point_cloud_ROS1.rviz"/>
+                args="-d $(find livox_ros_driver)/config/display_point_cloud_ROS1.rviz"/>
     </group>
 
     <group if="$(arg rosbag_enable)">
@@ -491,18 +491,18 @@ For more infomation about the HAP config, please refer to:
     <param name="output_data_type" value="$(arg output_type)"/>
     <param name="cmdline_str" type="string" value="$(arg bd_list)"/>
     <param name="cmdline_file_path" type="string" value="$(arg lvx_file_path)"/>
-    <param name="user_config_path" type="string" value="$(find livox_ros_driver2)/config/MID360_config2.json"/> # Mid360 MID360_config2 name
+    <param name="user_config_path" type="string" value="$(find livox_ros_driver)/config/MID360_config2.json"/> # Mid360 MID360_config2 name
     <param name="frame_id" type="string" value="$(arg msg_frame_id)"/>
     <param name="enable_lidar_bag" type="bool" value="$(arg lidar_bag)"/>
     <param name="enable_imu_bag" type="bool" value="$(arg imu_bag)"/>
 
-    <node name="livox_lidar_publisher2" pkg="livox_ros_driver2"
-          type="livox_ros_driver2_node" required="true"
+    <node name="livox_lidar_publisher2" pkg="livox_ros_driver"
+          type="livox_ros_driver_node" required="true"
           output="screen" args="$(arg cmdline_arg)"/>
 
     <group if="$(arg rviz_enable)">
         <node name="livox_rviz" pkg="rviz" type="rviz" respawn="true"
-                args="-d $(find livox_ros_driver2)/config/display_point_cloud_ROS1.rviz"/>
+                args="-d $(find livox_ros_driver)/config/display_point_cloud_ROS1.rviz"/>
     </group>
 
     <group if="$(arg rosbag_enable)">

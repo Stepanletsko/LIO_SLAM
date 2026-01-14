@@ -35,8 +35,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        PandarXT-32:
-          Value: true
         body:
           Value: true
         camera_init:
@@ -49,8 +47,7 @@ Visualization Manager:
       Tree:
         camera_init:
           body:
-            PandarXT-32:
-              {}
+            {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -120,11 +117,11 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /path
       Value: true
-    - Alpha: 1
+    - Alpha: 0.4000000059604645
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 18.63611602783203
-        Min Value: -3.750480890274048
+        Max Value: 15.598517417907715
+        Min Value: -17.206640243530273
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -268,25 +265,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.0010000000474974513
+      Distance: 70.89344787597656
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.43070700764656067
-        Y: -18.2093505859375
-        Z: 3.000004291534424
+        X: 196.7556610107422
+        Y: -44.112586975097656
+        Z: 99.46298217773438
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.47979679703712463
+      Pitch: 0.4847967028617859
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 3.1453702449798584
+      Yaw: 4.550371170043945
     Saved: ~
 Window Geometry:
   Displays:

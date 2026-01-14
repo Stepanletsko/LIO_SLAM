@@ -7,11 +7,11 @@ if(ROS_EDITION STREQUAL "ROS1")
 
 
   #---------------------------------------------------------------------------------------
-  # Start livox_ros_driver2 project
+  # Start livox_ros_driver project
   #---------------------------------------------------------------------------------------
   include(cmake/version.cmake)
-  project(livox_ros_driver2 VERSION ${LIVOX_ROS_DRIVER2_VERSION} LANGUAGES CXX)
-  message(STATUS "livox_ros_driver2 version: ${LIVOX_ROS_DRIVER2_VERSION}")
+  project(livox_ros_driver VERSION ${LIVOX_ROS_DRIVER2_VERSION} LANGUAGES CXX)
+  message(STATUS "livox_ros_driver version: ${LIVOX_ROS_DRIVER2_VERSION}")
 
   #---------------------------------------------------------------------------------------
   # Add ROS Version MACRO
@@ -125,7 +125,7 @@ if(ROS_EDITION STREQUAL "ROS1")
     src/lds.cpp
     src/lds_lidar.cpp
     src/lddc.cpp
-    src/livox_ros_driver2.cpp
+    src/livox_ros_driver.cpp
 
     src/comm/comm.cpp
     src/comm/ldq.cpp
@@ -189,7 +189,7 @@ else(ROS_EDITION STREQUAL "ROS2")
   # Copyright(c) 2020 livoxtech limited.
 
   cmake_minimum_required(VERSION 3.14)
-  project(livox_ros_driver2)
+  project(livox_ros_driver)
 
   # Default to C99
   if(NOT CMAKE_C_STANDARD)
@@ -259,7 +259,7 @@ else(ROS_EDITION STREQUAL "ROS2")
 
   # livox ros2 driver target
   ament_auto_add_library(${PROJECT_NAME} SHARED
-    src/livox_ros_driver2.cpp
+    src/livox_ros_driver.cpp
     src/lddc.cpp
     src/driver_node.cpp
     src/lds.cpp
@@ -282,7 +282,7 @@ else(ROS_EDITION STREQUAL "ROS2")
   target_include_directories(${PROJECT_NAME} PRIVATE ${livox_sdk_INCLUDE_DIRS})
 
   # get include directories of custom msg headers
-  if(HUMBLE_ROS STREQUAL "humble" OR "$ENV{ROS_DISTRO}" STREQUAL "humble")
+  if(HUMBLE_ROS STREQUAL "humble")
     rosidl_get_typesupport_target(cpp_typesupport_target
     ${LIVOX_INTERFACES} "rosidl_typesupport_cpp")
     target_link_libraries(${PROJECT_NAME} "${cpp_typesupport_target}")

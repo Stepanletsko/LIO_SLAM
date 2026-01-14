@@ -1,6 +1,6 @@
 The following portions of the LIVOX’s Livox ROS Driver2 (“Software” referred to in the terms below) are made available to you under the terms of the MIT License provided below and is also available at https://opensource.org/licenses/MIT.  
 
-livox_ros_driver2
+livox_ros_driver
 ├── build.sh
 ├── cmake
 │   └── version.cmake
@@ -53,7 +53,7 @@ livox_ros_driver2
     ├── driver_node.cpp
     ├── driver_node.h
     ├── include
-    │   ├── livox_ros_driver2.h
+    │   ├── livox_ros_driver.h
     │   ├── ros1_headers.h
     │   ├── ros2_headers.h
     │   └── ros_headers.h
@@ -63,7 +63,7 @@ livox_ros_driver2
     ├── lds.h
     ├── lds_lidar.cpp
     ├── lds_lidar.h
-    ├── livox_ros_driver2.cpp
+    ├── livox_ros_driver.cpp
     └── parse_cfg_file
         ├── parse_cfg_file.cpp
         ├── parse_cfg_file.h
@@ -98,7 +98,7 @@ SOFTWARE.
 
 LIVOX’s Livox ROS Driver2 uses unmodified source code of RapidJSON (https://github.com/Tencent/rapidjson), which is also licensed under MIT license. A copy of the MIT license is provided below and is also available at https://opensource.org/licenses/MIT.
 
-livox_ros_driver2
+livox_ros_driver
 ├── 3rdparty
 │   └── rapidjson
 │       ├── allocators.h
