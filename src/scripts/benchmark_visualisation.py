@@ -6,6 +6,17 @@ total_frames = 1410
 ipf = total_instructions / total_frames # ~187.4M
 intel_measured_ms = 6.70
 
+# Architecture GIPS (Giga-Instructions Per Second) baselines
+# These are standard research approximations for these CPUs
+architectures = {
+    "Intel Ultra 5 (Measured)": {"gips": 0, "time": intel_measured_ms, "color": "#2ecc71"},
+    "Jetson Orin Nano": {"gips": 6.5, "time": 0, "color": "#3498db"},
+    "Raspberry Pi 5": {"gips": 5.0, "time": 0, "color": "#e74c3c"},
+    "Jetson Nano": {"gips": 2.0, "time": 0, "color": "#3498db"},
+    "Raspberry Pi 4": {"gips": 2.5, "time": 0, "color": "#e74c3c"},
+    "Raspberry Pi 3": {"gips": 0.8, "time": 0, "color": "#e74c3c"}
+}
+
 # Calculate projected times
 plot_data = []
 for name, data in architectures.items():
