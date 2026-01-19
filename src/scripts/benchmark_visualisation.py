@@ -1,58 +1,121 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
-# Data constants from your specific run
-total_instructions = 264232227444
-total_frames = 1410
-ipf = total_instructions / total_frames # ~187.4M
-intel_measured_ms = 6.70
+ 
 
-# Architecture GIPS (Giga-Instructions Per Second) baselines
-# These are standard research approximations for these CPUs
-architectures = {
-    "Intel Ultra 5 (Measured)": {"gips": 0, "time": intel_measured_ms, "color": "#2ecc71"},
-    "Jetson Orin Nano": {"gips": 6.5, "time": 0, "color": "#3498db"},
-    "Raspberry Pi 5": {"gips": 5.0, "time": 0, "color": "#e74c3c"},
-    "Jetson Nano": {"gips": 2.0, "time": 0, "color": "#3498db"},
-    "Raspberry Pi 4": {"gips": 2.5, "time": 0, "color": "#e74c3c"},
-    "Raspberry Pi 3": {"gips": 0.8, "time": 0, "color": "#e74c3c"}
-}
+# Define the raw data 
+# List of platform names (Intel first as baseline) 
 
-# Calculate projected times
-plot_data = []
-for name, data in architectures.items():
-    if data["gips"] > 0:
-        # Time (ms) = (Instructions / (GIPS * 10^9)) * 1000
-        projected_ms = (ipf / (data["gips"] * 1e9)) * 1000
-        plot_data.append((name, projected_ms, data["color"]))
-    else:
-        plot_data.append((name, data["time"], data["color"]))
+platforms = [ 
 
-# Sort data by time for a clean bar chart
-plot_data.sort(key=lambda x: x[1])
+'Intel Ultra 5 (Measured)', 
 
-names = [x[0] for x in plot_data]
-times = [x[1] for x in plot_data]
-colors = [x[2] for x in plot_data]
+'Raspberry Pi 5', 
 
-# Plotting
-plt.figure(figsize=(12, 7))
-bars = plt.bar(names, times, color=colors, edgecolor='black', alpha=0.8)
+'Raspberry Pi 4B', 
 
-# Add real-time threshold line (10Hz = 100ms)
-plt.axhline(y=100, color='red', linestyle='--', linewidth=2, label="Real-time Threshold (10Hz)")
+'Jetson Orin Nano', 
 
-# Styling
-plt.ylabel('Processing Time per Frame (ms)', fontsize=12, fontweight='bold')
-plt.title('Fast-LIO2 Performance: Measured vs. Architecture Projections\n(Workload: 187.4M Instructions/Frame)', fontsize=14, pad=20)
-plt.xticks(rotation=15, ha='right')
-plt.grid(axis='y', linestyle=':', alpha=0.6)
+'Jetson Nano', 
 
-# Value labels on top of bars
-for bar in bars:
-    yval = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, yval + 2, f'{yval:.1f}ms', ha='center', fontweight='bold')
+'Raspberry Pi 3B+' 
 
-plt.legend()
-plt.tight_layout()
-plt.savefig('benchmark_comparison.png', dpi=300)
-print("Graph saved as benchmark_comparison.png")
+] 
+
+# Corresponding Geekbench 6 single-core average scores 
+# Higher score = faster performance 
+scores = [2415, 899, 253, 691, 234, 98] 
+
+# Measured baseline latency on Intel (in milliseconds) 
+baseline_latency = 6.7 
+
+# Baseline score (used as reference for scaling) 
+baseline_score = scores[0] 
+
+#Calculate projected latencies for all platforms 
+latencies = [] 
+platform_data = [] 
+
+ 
+
+for i, (plat, score) in enumerate(zip(platforms, scores)): 
+
+    if i == 0: 
+        # For the baseline (Intel), use the real measured value 
+        latency = baseline_latency 
+
+    else: 
+
+        # Basic projection: inverse scaling with benchmark score 
+        # Higher score → lower (better) latency 
+        projected = baseline_latency * (baseline_score / score) 
+
+        # Apply 15% penalty for ARM platforms (RISC vs CISC difference) 
+        adjusted = projected * 1 
+
+        # Round to 1 decimal place
+        latency = round(adjusted, 1) 
+
+    # Store both name and calculated latency for later sorting 
+    platform_data.append((plat, latency)) 
+    latencies.append(latency) # temporary list, will be re-ordered later 
+
+
+# Sort platforms: Intel first, then others from fastest → slowest === 
+# Keep Intel always at position 0 
+intel_entry = platform_data.pop(0) # Remove Intel from the list 
+
+
+# Sort the remaining platforms by latency (ascending = fastest first) 
+sorted_rest = sorted(platform_data, key=lambda x: x[1]) 
+ 
+
+# Rebuild final ordered lists 
+ordered_data = [intel_entry] + sorted_rest 
+
+# Extract sorted names and latencies for plotting 
+ordered_platforms = [item[0] for item in ordered_data] 
+ordered_latencies = [item[1] for item in ordered_data] 
+
+# Colors: green for Intel, red for Raspberry Pi family, blue for Jetson family 
+colors = ['green' if 'Intel' in p else 'red' if 'Raspberry' in p else 'blue'  
+for p in ordered_platforms] 
+
+ 
+
+#  Create the plot
+fig, ax = plt.subplots(figsize=(11, 6.5)) # Slightly wider to fit sorted labels nicely 
+
+# Draw the bars using the ordered data 
+ax.bar(ordered_platforms, ordered_latencies, color=colors, width=0.62) 
+
+# Set axis labels and title 
+ax.set_ylabel('Processing Time per Frame [ms]') 
+ax.set_title('Normalised FAST-LIO2 Performance: Geekbench-Based Projections\n' ) 
+
+
+# Add horizontal dashed red line for the real-time threshold (10 Hz = 100 ms) 
+ax.axhline(y=100, color='red', linestyle='--', linewidth=1.4,  
+label='Real-time Threshold (10Hz)') 
+
+# Add exact latency value on top of every bar 
+for i, latency in enumerate(ordered_latencies): 
+    ax.text(i, latency + 3, f'{latency} ms',  
+            ha='center', va='bottom', fontsize=10, fontweight='bold') 
+
+
+# Rotate x-axis labels so they don't overlap 
+plt.xticks(rotation=40, ha='right') 
+
+# Add legend
+plt.legend(loc='upper left') 
+plt.tight_layout() 
+
+# Show the plot on screen 
+plt.show() 
+
+#print the final ordered results for reference 
+print("\nFinal ordered platforms (fastest → slowest after baseline):") 
+
+for p, l in zip(ordered_platforms, ordered_latencies): 
+
+    print(f"{p:25} → {l} ms") 

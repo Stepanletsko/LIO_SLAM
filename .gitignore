@@ -10,6 +10,7 @@ bags/*.db3
 bags/*_ROS2/
 bags/*_fixed_ros2/
 bags/.libs/
+src/results/
 
 # Ignore environment config
 .env
