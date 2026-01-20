@@ -135,6 +135,12 @@ esekfom::esekf<state_ikfom, 12, input_ikfom> kf;
 state_ikfom state_point;
 vect3 pos_lid;
 
+// ======= Stepan Letsko ========//
+V3D last_keyframe_pos(0,0,0); // Variable to remember the XYZ position of the LAST saved frame. (Eigen 3D vector)
+M3D last_keyframe_rot(Eye3d); // Variable to remember the Rotation (Orientation) of the LAST saved frame. (Eigen 3D Matrix)
+bool is_first_keyframe = true; // A flag to ensure we ALWAYS save the very first frame we see, otherwise the map would be empty until we move 1 meter.
+// ==============================//
+
 nav_msgs::msg::Path path;
 nav_msgs::msg::Odometry odomAftMapped;
 geometry_msgs::msg::Quaternion geoQuat;
@@ -486,7 +492,7 @@ void map_incremental()
 
 PointCloudXYZI::Ptr pcl_wait_pub(new PointCloudXYZI());
 PointCloudXYZI::Ptr pcl_wait_save(new PointCloudXYZI());
-void publish_frame_world(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudFull)
+void publish_frame_world(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudFull, bool is_keyframe) // Added is_keyframe argument to control pcd saving
 {
     if(scan_pub_en)
     {
@@ -513,7 +519,9 @@ void publish_frame_world(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::Share
     /**************** save map ****************/
     /* 1. make sure you have enough memories
     /* 2. noted that pcd save will influence the real-time performences **/
-    if (pcd_save_en)
+    if (pcd_save_en && is_keyframe) //====== Stepan Letsko =======//
+    // Logic: Only run this memory-heavy code IF the user wants to save (pcd_save_en)
+    //        AND our math says we have moved enough (is_keyframe).
     {
         int size = feats_undistort->points.size();
         PointCloudXYZI::Ptr laserCloudWorld( \
@@ -1066,10 +1074,43 @@ private:
             t3 = omp_get_wtime();
             map_incremental();
             t5 = omp_get_wtime();
+
+            // =============Stepan Letsko ============
+            // === NEW KEYFRAME LOGIC STARTS HERE ===
+            // ==========================================
+            bool is_keyframe = false; // Default to false. We assume we are NOT saving unless proven otherwise
+            
+            // 1. Calculating the Linear Distance
+            // (Current Position - Last Saved Position).norm() gives the straight line distance in meters.
+            double dist_moved = (state_point.pos - last_keyframe_pos).norm();
+            
+            // 2. Calculating the Angular Change 
+            // We multiply the Transpose of the Old Rotation by the New Rotation.
+            // This gives us the Difference Matrix between the two orientations.
+            M3D rot_diff = last_keyframe_rot.transpose() * state_point.rot;
+
+            // The Trace s the sum of the diagonal numbers of the matrix.
+            // In Linear Algebra, Trace is directly related to the rotation angle theta:
+            // Trace = 1 + 2*cos(theta)
+            double trace = rot_diff.trace();
+
+            // We inverse that formula to get the Angle in Radians.
+            // We use min/max to ensure the value stays between -1 and 1 (to prevent math errors).
+            double angle_moved = acos(std::min(1.0, std::max(-1.0, (trace - 1.0) / 2.0))); // Radians
+
+            // 3. Thresholds: 1.0 meter OR 0.2 radians (~11 degrees)
+            if (is_first_keyframe || dist_moved > 1.0 || angle_moved > 0.2) 
+            {
+                is_keyframe = true; // THEN: We declare this a Keyframe
+                last_keyframe_pos = state_point.pos; // Update the Last variables to be Current
+                last_keyframe_rot = state_point.rot; // So the next check is calculated relative to THIS spot.
+                is_first_keyframe = false; // Turn off the first_frame flag forever.
+            }
+            // ==========================================
             
             /******* Publish points *******/
             if (path_en)                         publish_path(pubPath_);
-            if (scan_pub_en)      publish_frame_world(pubLaserCloudFull_);
+            if (scan_pub_en)      publish_frame_world(pubLaserCloudFull_, is_keyframe); // Pass is_keyframe to control pcd saving
             if (scan_pub_en && scan_body_pub_en) publish_frame_body(pubLaserCloudFull_body_);
             if (effect_pub_en) publish_effect_world(pubLaserCloudEffect_);
             // if (map_pub_en) publish_map(pubLaserCloudMap_);
