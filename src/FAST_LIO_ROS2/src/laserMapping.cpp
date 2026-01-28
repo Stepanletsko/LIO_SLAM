@@ -70,7 +70,7 @@
 
 /*** Time Log Variables ***/
 double kdtree_incremental_time = 0.0, kdtree_search_time = 0.0, kdtree_delete_time = 0.0;
-double T1[MAXN], s_plot[MAXN], s_plot2[MAXN], s_plot3[MAXN], s_plot4[MAXN], s_plot5[MAXN], s_plot6[MAXN], s_plot7[MAXN], s_plot8[MAXN], s_plot9[MAXN], s_plot10[MAXN], s_plot11[MAXN];
+double T1[MAXN], s_plot[MAXN], s_plot2[MAXN], s_plot3[MAXN], s_plot4[MAXN], s_plot5[MAXN], s_plot6[MAXN], s_plot7[MAXN], s_plot8[MAXN], s_plot9[MAXN], s_plot10[MAXN], s_plot11[MAXN], s_plot12[MAXN];
 double match_time = 0, solve_time = 0, solve_const_H_time = 0;
 int    kdtree_size_st = 0, kdtree_size_end = 0, add_point_size = 0, kdtree_delete_counter = 0;
 bool   runtime_pos_log = false, pcd_save_en = false, time_sync_en = false, extrinsic_est_en = true, path_en = true;
@@ -966,7 +966,7 @@ private:
                 return;
             }
 
-            double t0,t1,t2,t3,t4,t5,match_start, solve_start, svd_time;
+            double t0,t1,t2,t3,t4,t5,t6,match_start, solve_start, svd_time;
 
             match_time = 0;
             kdtree_search_time = 0.0;
@@ -1073,6 +1073,7 @@ private:
             if (scan_pub_en && scan_body_pub_en) publish_frame_body(pubLaserCloudFull_body_);
             if (effect_pub_en) publish_effect_world(pubLaserCloudEffect_);
             // if (map_pub_en) publish_map(pubLaserCloudMap_);
+            t6 = omp_get_wtime();
 
             /*** Debug variables ***/
             if (runtime_pos_log)
@@ -1096,6 +1097,7 @@ private:
                 s_plot8[time_log_counter] = kdtree_size_end;
                 s_plot9[time_log_counter] = aver_time_consu;
                 s_plot10[time_log_counter] = add_point_size;
+                s_plot12[time_log_counter] = t6 - t5;
                 time_log_counter ++;
                 printf("[ mapping ]: time: IMU + Map + Input Downsample: %0.6f ave match: %0.6f ave solve: %0.6f  ave ICP: %0.6f  map incre: %0.6f ave total: %0.6f icp: %0.6f construct H: %0.6f \n",t1-t0,aver_time_match,aver_time_solve,t3-t1,t5-t3,aver_time_consu,aver_time_icp, aver_time_const_H_time);
                 ext_euler = SO3ToEuler(state_point.offset_R_L_I);
@@ -1181,9 +1183,9 @@ int main(int argc, char** argv)
         FILE *fp2;
         string log_dir = root_dir + "/Log/fast_lio_time_log.csv";
         fp2 = fopen(log_dir.c_str(),"w");
-        fprintf(fp2,"time_stamp, total time, scan point size, incremental time, search time, delete size, delete time, tree size st, tree size end, add point size, preprocess time\n");
+        fprintf(fp2,"time_stamp, math_time, scan point size, incremental time, search time, delete size, delete time, tree size st, tree size end, add point size, preprocess time, io_time\n");
         for (int i = 0;i<time_log_counter; i++){
-            fprintf(fp2,"%0.8f,%0.8f,%d,%0.8f,%0.8f,%d,%0.8f,%d,%d,%d,%0.8f\n",T1[i],s_plot[i],int(s_plot2[i]),s_plot3[i],s_plot4[i],int(s_plot5[i]),s_plot6[i],int(s_plot7[i]),int(s_plot8[i]), int(s_plot10[i]), s_plot11[i]);
+            fprintf(fp2,"%0.8f,%0.8f,%d,%0.8f,%0.8f,%d,%0.8f,%d,%d,%d,%0.8f,%0.8f\n",T1[i],s_plot[i],int(s_plot2[i]),s_plot3[i],s_plot4[i],int(s_plot5[i]),s_plot6[i],int(s_plot7[i]),int(s_plot8[i]), int(s_plot10[i]), s_plot11[i], s_plot12[i]);
             t.push_back(T1[i]);
             s_vec.push_back(s_plot9[i]);
             s_vec2.push_back(s_plot3[i] + s_plot6[i]);

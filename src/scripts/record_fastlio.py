@@ -17,7 +17,7 @@ def run_and_record(bag_path, config="avia.yaml"):
         subprocess.run(['rm', '-rf', str(output_bag_dir)])
 
     # 2. Get bag duration for progress bar
-    print(f" Analyzing input bag: {bag_name}...")
+    print(f" Analysig input bag: {bag_name}...")
     info_proc = subprocess.run(['ros2', 'bag', 'info', bag_path], capture_output=True, text=True)
     duration_match = re.search(r"Duration:\s+(\d+\.\d+)s", info_proc.stdout)
     if not duration_match:
@@ -71,7 +71,7 @@ def run_and_record(bag_path, config="avia.yaml"):
         print("\n\nStopping script...")
     finally:
         # 7. Cleanup and Shutdown
-        print(f"✅ Playback finished. Wrapping up recording...")
+        print(f"Playback finished. Wrapping up recording...")
         
         # Kill record_proc first to ensure the bag is closed properly
         os.kill(record_proc.pid, signal.SIGINT)
