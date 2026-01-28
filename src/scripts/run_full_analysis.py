@@ -19,6 +19,7 @@ RESULTS_BASE = Path("/root/ros2_ws/src/results/full_analysis_results")
 # The map name defined in your yaml (usually ./scans.pcd or ./RAM_TEST.pcd)
 EXPECTED_PCD_NAME = "Current_map.pcd" 
 FAST_LIO_LOG_PATH = Path("/root/ros2_ws/src/FAST_LIO_ROS2/Log/fast_lio_time_log.csv")
+BAG_TO_TUM_SCRIPT = Path(__file__).parent / "bag_to_tum.py"
 
 class FastLioAnalyzer:
     def __init__(self, bag_path, config_file):
@@ -288,6 +289,13 @@ class FastLioAnalyzer:
         if Path(EXPECTED_PCD_NAME).exists():
             shutil.move(EXPECTED_PCD_NAME, self.output_dir / "final_map.pcd")
             print("   -> Map Saved successfully.")
+            
+        # Extract Trajectory (TUM format) for Evo
+        if BAG_TO_TUM_SCRIPT.exists() and bag_out.exists():
+            tum_out = self.output_dir / f"{self.bag_name}_trajectory.tum"
+            print(f"   -> Extracting trajectory to {tum_out.name}...")
+            subprocess.run(['python3', str(BAG_TO_TUM_SCRIPT), str(bag_out), str(tum_out)],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
         # Copy C++ Log CSV and Generate Plot
         if FAST_LIO_LOG_PATH.exists():
