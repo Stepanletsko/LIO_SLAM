@@ -914,6 +914,14 @@ public:
         // FILE *fp;
         string pos_log_dir = root_dir + "/Log/pos_log.txt";
         fp = fopen(pos_log_dir.c_str(),"w");
+        
+        // STEPAN LETSKO 27/01/2026
+        string time_log_dir = root_dir + "/Log/fast_lio_time_log.csv";
+        fp2 = fopen(time_log_dir.c_str(),"w");
+        if (fp2) {
+            fprintf(fp2,"time_stamp, math_time, scan_point_size, incremental_time, search_time, delete_size, delete_time, tree_size_st, tree_size_end, add_point_size, preprocess_time, io_time\n");
+        }
+        // END
 
         // ofstream fout_pre, fout_out, fout_dbg;
         fout_pre.open(DEBUG_FILE_DIR("mat_pre.txt"),ios::out);
@@ -927,11 +935,14 @@ public:
         /*** ROS subscribe initialization ***/
         if (p_pre->lidar_type == AVIA)
         {
-            sub_pcl_livox_ = this->create_subscription<livox_ros_driver::msg::CustomMsg>(lid_topic, 20, livox_pcl_cbk);
+            sub_pcl_livox_ = this->create_subscription<livox_ros_driver::msg::CustomMsg>(lid_topic, 2000, livox_pcl_cbk);
         }
         else
         {
-            sub_pcl_pc_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(lid_topic, rclcpp::SensorDataQoS(), standard_pcl_cbk);
+            // The Big Buffer Fix
+            rclcpp::QoS qos(rclcpp::KeepLast(2000));
+            qos.reliable();
+            sub_pcl_pc_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(lid_topic, qos, standard_pcl_cbk);
         }
         sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(imu_topic, 10, imu_cbk);
         pubLaserCloudFull_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_registered", 20);
@@ -959,6 +970,7 @@ public:
         fout_out.close();
         fout_pre.close();
         fclose(fp);
+        if (fp2) fclose(fp2); // STEPAN LETSKO
     }
 
 private:
@@ -1114,6 +1126,8 @@ private:
             if (scan_pub_en && scan_body_pub_en) publish_frame_body(pubLaserCloudFull_body_);
             if (effect_pub_en) publish_effect_world(pubLaserCloudEffect_);
             // if (map_pub_en) publish_map(pubLaserCloudMap_);
+            
+            double t6 = omp_get_wtime(); //STEPAN LETSKO
 
             /*** Debug variables ***/
             if (runtime_pos_log)
@@ -1143,6 +1157,24 @@ private:
                 fout_out << setw(20) << Measures.lidar_beg_time - first_lidar_time << " " << euler_cur.transpose() << " " << state_point.pos.transpose()<< " " << ext_euler.transpose() << " "<<state_point.offset_T_L_I.transpose()<<" "<< state_point.vel.transpose() \
                 <<" "<<state_point.bg.transpose()<<" "<<state_point.ba.transpose()<<" "<<state_point.grav<<" "<<feats_undistort->points.size()<<endl;
                 dump_lio_state_to_log(fp);
+                
+                // STEPAN LETSKO
+                if (fp2) {
+                    fprintf(fp2,"%0.8f,%0.8f,%d,%0.8f,%0.8f,%d,%0.8f,%d,%d,%d,%0.8f,%0.8f\n",
+                        T1[time_log_counter-1],
+                        s_plot[time_log_counter-1],
+                        int(s_plot2[time_log_counter-1]),
+                        s_plot3[time_log_counter-1],
+                        s_plot4[time_log_counter-1],
+                        int(s_plot5[time_log_counter-1]),
+                        s_plot6[time_log_counter-1],
+                        int(s_plot7[time_log_counter-1]),
+                        int(s_plot8[time_log_counter-1]),
+                        int(s_plot10[time_log_counter-1]),
+                        s_plot11[time_log_counter-1],
+                        t6 - t5);
+                        // END
+                }
             }
         }
     }
@@ -1191,6 +1223,7 @@ private:
     double epsi[23] = {0.001};
 
     FILE *fp;
+    FILE *fp2;
     ofstream fout_pre, fout_out, fout_dbg;
 };
 
@@ -1214,24 +1247,6 @@ int main(int argc, char** argv)
         pcl::PCDWriter pcd_writer;
         cout << "current scan saved to /PCD/" << file_name<<endl;
         pcd_writer.writeBinary(all_points_dir, *pcl_wait_save);
-    }
-
-    if (runtime_pos_log)
-    {
-        vector<double> t, s_vec, s_vec2, s_vec3, s_vec4, s_vec5, s_vec6, s_vec7;    
-        FILE *fp2;
-        string log_dir = root_dir + "/Log/fast_lio_time_log.csv";
-        fp2 = fopen(log_dir.c_str(),"w");
-        fprintf(fp2,"time_stamp, total time, scan point size, incremental time, search time, delete size, delete time, tree size st, tree size end, add point size, preprocess time\n");
-        for (int i = 0;i<time_log_counter; i++){
-            fprintf(fp2,"%0.8f,%0.8f,%d,%0.8f,%0.8f,%d,%0.8f,%d,%d,%d,%0.8f\n",T1[i],s_plot[i],int(s_plot2[i]),s_plot3[i],s_plot4[i],int(s_plot5[i]),s_plot6[i],int(s_plot7[i]),int(s_plot8[i]), int(s_plot10[i]), s_plot11[i]);
-            t.push_back(T1[i]);
-            s_vec.push_back(s_plot9[i]);
-            s_vec2.push_back(s_plot3[i] + s_plot6[i]);
-            s_vec3.push_back(s_plot4[i]);
-            s_vec5.push_back(s_plot[i]);
-        }
-        fclose(fp2);
     }
 
     return 0;

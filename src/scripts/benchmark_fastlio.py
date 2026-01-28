@@ -9,6 +9,7 @@ import os  # Import os for operating system dependent functionality
 import csv  # Import csv for reading and writing CSV files
 import time  # Import time for time-related functions
 import sys  # Import sys for system-specific parameters and functions
+import signal # Import signal for SIGINT
 from pathlib import Path  # Import Path for object-oriented filesystem paths
 
 def run_benchmark(bag_path, config="avia.yaml"):  # Define the main benchmark function taking bag path and config file
@@ -41,14 +42,19 @@ def run_benchmark(bag_path, config="avia.yaml"):  # Define the main benchmark fu
     csv_writer.writerow(["IMU_Map_Downsample", "ave_match", "ave_solve", "ave_ICP", "map_incre", "ave_total", "icp", "construct_H"])  # Write the header row to the CSV
 
     # 4. Start FAST-LIO
-    print(f"🚀 Launching FAST-LIO with config: {config}")  # Print launch status
+    print(f"Launching FAST-LIO with config: {config}")  # Print launch status
     # Using stdbuf to prevent output buffering so we can parse logs in real-time
-    mapping_cmd = ['stdbuf', '-oL', 'ros2', 'launch', 'fast_lio', 'mapping.launch.py', f'config_file:={config}', 'use_sim_time:=true', 'rviz:=false']  # Construct the launch command
+    mapping_cmd = ['stdbuf', '-oL', 'ros2', 'launch', 'fast_lio', 'mapping.launch.py', f'config_file:={config}', 'rviz:=false']  # Construct the launch command
     mapping_proc = subprocess.Popen(mapping_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)  # Start the process, capturing stdout
+   
+    # === ADDING THIS BLOCK TO FIX THE STARTUP DROP ISSUE ===
+    print("Waiting 20 seconds for node to initialise...")
+    time.sleep(20) 
+   
 
     # 5. Start Bag Playback (Removed 
     print(f" Playing bag...")  # Print playback status
-    bag_cmd = ['ros2', 'bag', 'play', bag_path, '--clock']  # Construct the bag play command
+    bag_cmd = ['ros2', 'bag', 'play', bag_path]  # Construct the bag play command
     # Redirect bag output to DEVNULL so it doesn't clutter the progress bar
     subprocess.Popen(bag_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # Start bag playback in background, silencing output
 
@@ -56,7 +62,7 @@ def run_benchmark(bag_path, config="avia.yaml"):  # Define the main benchmark fu
     start_time = time.time()  # Record the start time
     latencies = []  # Initialize list to store latency values
     
-    print(f"📊 Benchmarking in progress...")  # Print benchmark status
+    print(f"Benchmarking in progress...")  # Print benchmark status
     
     try:  # Start try block to handle interruptions
         while True:  # Loop continuously
@@ -74,6 +80,9 @@ def run_benchmark(bag_path, config="avia.yaml"):  # Define the main benchmark fu
                     csv_writer.writerow(vals)  # Write values to CSV
                     latencies.append(vals[5]) # ave_total  # Append total time to latencies list
             
+            if "DIAGNOSTIC" in line or "Buffer Clears" in line or "Received Msgs" in line or "Processed Frames" in line:
+                print(f"\r{line.strip()}")
+            
             # Update Progress Bar based on elapsed wall time
             elapsed = time.time() - start_time  # Calculate elapsed time
             percent = min(100, (elapsed / total_duration) * 100)  # Calculate percentage complete
@@ -87,7 +96,19 @@ def run_benchmark(bag_path, config="avia.yaml"):  # Define the main benchmark fu
     except KeyboardInterrupt:  # Handle Ctrl+C interruption
         print("\n\nStopping benchmark...")  # Print stopping message
     finally:  # Execute cleanup code
-        mapping_proc.terminate()  # Terminate the FAST-LIO process
+        # Graceful shutdown to allow destructor to print stats
+        if mapping_proc.poll() is None:
+            mapping_proc.send_signal(signal.SIGINT)
+            try:
+                # Read remaining output (stats) while waiting for exit
+                while mapping_proc.poll() is None:
+                    line = mapping_proc.stdout.readline()
+                    if not line: break
+                    if "DIAGNOSTIC" in line or "Buffer Clears" in line or "Received Msgs" in line or "Processed Frames" in line:
+                        print(f"\r{line.strip()}")
+            except:
+                mapping_proc.terminate()
+        
         log_file.close()  # Close the log file
         csv_file.close()  # Close the CSV file
 
