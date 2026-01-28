@@ -59,9 +59,15 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-pip \
+    python3-tk \
     && pip3 install "rosbags" "numpy<2.0" lz4 pandas matplotlib psutil
 
-# 5. Setup Entrypoint
+# 5. Install evo for trajectory evaluation
+RUN apt-get update && apt-get install -y python3-pip && \
+    pip3 install evo --upgrade --no-binary evo && \
+    rm -rf /var/lib/apt/lists/*
+
+# 6. Setup Entrypoint
 # Copy the entrypoint script into the image
 COPY entrypoint.sh /entrypoint.sh
 # Make it executable
