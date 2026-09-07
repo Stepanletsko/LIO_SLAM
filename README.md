@@ -210,6 +210,26 @@ ros2 run foxglove_bridge foxglove_bridge --ros-args -p topic_whitelist:='["^(?!/
 
 - Onboard path-planning and obstacle avoidance for fully autonomous return-to-home when base station connectivity is lost during deep subterranean telemetry attenuation.
 
+## Built On
+
+This work builds directly on **FAST-LIO2**, the LiDAR-inertial odometry algorithm running at the core of the edge-side estimator. All credit for the underlying code and algorithm goes to its original authors:
+
+> W. Xu, Y. Cai, D. He, J. Lin, and F. Zhang, "FAST-LIO2: Fast Direct LiDAR-Inertial Odometry," *IEEE Transactions on Robotics*, vol. 38, no. 4, pp. 2053–2073, 2022.
+
+```bibtex
+@article{xu2022fastlio2,
+  author  = {Xu, Wei and Cai, Yixi and He, Dongjiao and Lin, Jiarong and Zhang, Fu},
+  title   = {FAST-LIO2: Fast Direct LiDAR-Inertial Odometry},
+  journal = {IEEE Transactions on Robotics},
+  volume  = {38},
+  number  = {4},
+  pages   = {2053--2073},
+  year    = {2022}
+}
+```
+
+Original repository: [github.com/hku-mars/FAST_LIO](https://github.com/hku-mars/FAST_LIO)
+
 ## Author
 
 **Stepan Letsko** — ME Electronic & Computer Engineering, University College Dublin
